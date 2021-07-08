@@ -11,32 +11,32 @@ put this file in a folder called data. The producer reads from this file to send
 
 copy the jar from the target folder to the sandbox or cluster:
 
-scp  ms-sparkstreaming-1.0.jar user01@ipaddress:/user/user01/.
+scp  ms-sparkstreaming-1.0.jar mapr@ipaddress:/user/mapr/.
 
 if you are using vmware:
-scp  ms-sparkstreaming-1.0.jar user01@<ipaddress>:/user/user01/.
+scp  ms-sparkstreaming-1.0.jar mapr@<ipaddress>:/user/mapr/.
 
 if you are using virtualbox:
-scp -P 2222 ms-sparkstreaming-1.0.jar user01@127.0.0.1:/user/user01/.
+scp -P 2222 ms-sparkstreaming-1.0.jar mapr@127.0.0.1:/user/mapr/.
 
 ssh into mapr cluster or sandbox  
 
 if you are using vmware:
- ssh user01@<ipaddress>
+ ssh mapr@<ipaddress>
 
 if you are using virtualbox:
- ssh user01@127.0.0.1 -p 2222
+ ssh mapr@127.0.0.1 -p 2222
 
 Create the topics
 
-maprcli stream create -path /user/user01/pump -produceperm p -consumeperm p -topicperm p
-maprcli stream topic create -path /user/user01/pump -topic sensor -partitions 3
-maprcli stream topic create -path /user/user01/pump -topic sensoralert -partitions 3
+maprcli stream create -path /user/mapr/pump -produceperm p -consumeperm p -topicperm p
+maprcli stream topic create -path /user/mapr/pump -topic sensor -partitions 3
+maprcli stream topic create -path /user/mapr/pump -topic sensoralert -partitions 3
 
 get info on the topic
-maprcli stream info -path /user/user01/pump
+maprcli stream info -path /user/mapr/pump
 
-maprcli stream topic info -path /user/user01/pump -topic sensor -json
+maprcli stream topic info -path /user/mapr/pump -topic sensor -json
 
 To run the MapR Streams Java producer and consumer:
 
@@ -74,7 +74,7 @@ Create an hbase table to write to:
 launch the hbase shell
 $hbase shell
 
-create '/user/user01/sensor', {NAME=>'data'}, {NAME=>'alert'}, {NAME=>'stats'}
+create '/user/mapr/sensor', {NAME=>'data'}, {NAME=>'alert'}, {NAME=>'stats'}
 
 Step 4: start the streaming app writing to HBase
  
@@ -86,9 +86,9 @@ Scan HBase to see results:
 
 $hbase shell
 
-scan '/user/user01/sensor' , {'LIMIT' => 5}
+scan '/user/mapr/sensor' , {'LIMIT' => 5}
 
-scan '/user/user01/sensor' , {'COLUMNS'=>'alert',  'LIMIT' => 50}
+scan '/user/mapr/sensor' , {'COLUMNS'=>'alert',  'LIMIT' => 50}
 
  java -cp ms-sparkstreaming-1.0.jar:`hbase classpath` dao.SensorTablePrint
 
@@ -99,15 +99,15 @@ spark-submit --class solution.HBaseReadRowWriteStats --master local[2] ms-sparks
 
 $hbase shell
 
-scan '/user/user01/sensor' , {'COLUMNS'=>'stats',  'LIMIT' => 50}
+scan '/user/mapr/sensor' , {'COLUMNS'=>'stats',  'LIMIT' => 50}
 
 
 cleanup if you want to re-run:
 
-maprcli stream topic delete -path /user/user01/pump -topic sensor 
-maprcli stream topic create -path /user/user01/pump -topic sensor -partitions 3
+maprcli stream topic delete -path /user/mapr/pump -topic sensor 
+maprcli stream topic create -path /user/mapr/pump -topic sensor -partitions 3
 hbase shell 
-truncate '/user/user01/sensor'
+truncate '/user/mapr/sensor'
 
 ******  For a Spark streaming to read from a MapR Streams topic, write alerts to another topic. Then a MapR Streams consumer to read the alerts 
 and write to HBase:
@@ -115,7 +115,7 @@ http://maprdocs.mapr.com/51/index.html#Spark/Spark_IntegrateMapRStreams_Produce.
 
 create alert topic, if you did not already do so
 
-maprcli stream topic create -path /user/user01/pump -topic sensoralert -partitions 3
+maprcli stream topic create -path /user/mapr/pump -topic sensoralert -partitions 3
 
 Run Spark Streaming Consumer which reads from sensor topic, filters and publishes to alert topic
 
@@ -131,6 +131,6 @@ java -cp ms-sparkstreaming-1.0.jar:`mapr classpath`:`hbase classpath` dao.Sensor
 
 $hbase shell
 
-scan '/user/user01/sensor' , {'COLUMNS'=>'alert',  'LIMIT' => 50}
+scan '/user/mapr/sensor' , {'COLUMNS'=>'alert',  'LIMIT' => 50}
 
 
